@@ -14,6 +14,6 @@ import jakarta.persistence.LockModeType;
 @Repository
 public interface NroArticuloRepositorio extends JpaRepository<NroArticulo, Long> {
   @Lock(LockModeType.PESSIMISTIC_WRITE)
-  @Query("SELECT n FROM NroArticulo n ORDER BY n.id DESC LIMIT 1")
+  @Query("SELECT n FROM NroArticulo n WHERE n.contador = (SELECT MAX(n2.contador) FROM NroArticulo n2)")
   Optional<NroArticulo> findLatestCounter();
 }

@@ -64,12 +64,14 @@ public List<UserResponseDTO> listarTodos() {
    * @return The user if found
    * @throws ResourceNotFoundException if the user is not found
    */
-  public Usuario obtenerPorId(UUID id) {
-    return usuarioRepositorio.findById(id)
-        .orElseThrow(() -> new com.egg.casa_electricidad.excepciones.ResourceNotFoundException(
+public UserResponseDTO obtenerPorId(UUID id) {
+    Usuario usuario = usuarioRepositorio.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException(
             "Usuario no encontrado con ID: " + id));
+    
+    return modelMapper.map(usuario, UserResponseDTO.class);
   }
-
+  
   /**
    * Creates a new user
    * 
@@ -117,7 +119,7 @@ public List<UserResponseDTO> listarTodos() {
   @Transactional
   public void eliminarUsuario(UUID id) {
     if (!usuarioRepositorio.existsById(id)) {
-      throw new com.egg.casa_electricidad.excepciones.ResourceNotFoundException("Usuario no encontrado con ID: " + id);
+      throw new ResourceNotFoundException("Usuario no encontrado con ID: " + id);
     }
     usuarioRepositorio.deleteById(id);
   }
