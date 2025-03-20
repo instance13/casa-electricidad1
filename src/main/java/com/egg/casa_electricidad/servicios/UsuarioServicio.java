@@ -3,14 +3,20 @@ package com.egg.casa_electricidad.servicios;
 import java.util.List;
 import java.util.UUID;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.egg.casa_electricidad.configuration.dto.request.RegisterRequestDTO;
+import com.egg.casa_electricidad.configuration.dto.request.UserUpdateDTO;
+import com.egg.casa_electricidad.configuration.dto.response.UserResponseDTO;
 import com.egg.casa_electricidad.entidades.Usuario;
+import com.egg.casa_electricidad.enumeraciones.Rol;
 import com.egg.casa_electricidad.excepciones.ResourceNotFoundException;
 import com.egg.casa_electricidad.repositorios.UsuarioRepositorio;
 
@@ -23,6 +29,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UsuarioServicio implements UserDetailsService {
   private UsuarioRepositorio usuarioRepositorio;
+  private ModelMapper modelMapper;
+  private PasswordEncoder passwordEncoder;
 
   @Override
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -41,9 +49,13 @@ public class UsuarioServicio implements UserDetailsService {
    * 
    * @return List of all users
    */
-  public List<Usuario> listarTodos() {
-    return usuarioRepositorio.findAll();
-  }
+// i need to analyze this code:
+public List<UserResponseDTO> listarTodos() {
+    return usuarioRepositorio.findAll()
+        .stream()
+        .map(user -> modelMapper.map(user, UserResponseDTO.class))
+        .toList();
+}
 
   /**
    * Finds a user by ID
@@ -65,7 +77,15 @@ public class UsuarioServicio implements UserDetailsService {
    * @return The created user
    */
   @Transactional
-  public Usuario crearUsuario(Usuario usuario) {
+  public Usuario registrar(RegisterRequestDTO registerRequestDTO) {
+    if (usuarioRepositorio.findByEmail(registerRequestDTO.email()).isPresent()) {
+      throw new RuntimeException("El email ya está registrado.");
+    }
+
+    Usuario usuario = modelMapper.map(registerRequestDTO, Usuario.class);
+    usuario.setRol(Rol.USER);
+    usuario.setPassword(passwordEncoder.encode(registerRequestDTO.password()));
+
     return usuarioRepositorio.save(usuario);
   }
 
@@ -78,15 +98,12 @@ public class UsuarioServicio implements UserDetailsService {
    * @throws ResourceNotFoundException if the user is not found
    */
   @Transactional
-  public Usuario actualizarUsuario(UUID id, Usuario userDetails) {
+  public Usuario actualizarUsuario(UUID id, UserUpdateDTO userUpdateDTO) {
     Usuario usuario = obtenerPorId(id);
 
-    usuario.setEmail(userDetails.getEmail());
-    usuario.setNombre(userDetails.getNombre());
-    usuario.setApellido(userDetails.getApellido());
-    usuario.setPassword(userDetails.getPassword());
-    usuario.setRol(userDetails.getRol());
-    usuario.setImagenUsuario(userDetails.getImagenUsuario());
+    ModelMapper modelMapper = new ModelMapper();
+    modelMapper.getConfiguration().setSkipNullEnabled(true);
+    modelMapper.map(userUpdateDTO, usuario);
 
     return usuarioRepositorio.save(usuario);
   }

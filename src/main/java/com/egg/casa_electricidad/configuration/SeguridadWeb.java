@@ -1,4 +1,4 @@
-package com.egg.casa_electricidad;
+package com.egg.casa_electricidad.configuration;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -2,7 +2,8 @@ package com.egg.casa_electricidad.entidades;
 
 import java.util.UUID;
 
-import jakarta.persistence.Column;
+import org.hibernate.validator.constraints.UniqueElements;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -32,7 +33,7 @@ public class Articulo {
   private Integer nroArticulo;
 
   @NotBlank(message = "El nombre no debe estar vacío.")
-  @Column(unique = true)
+  @UniqueElements
   private String nombreArticulo;
 
   @NotBlank(message = "La descripción no debe estar vacía.")
