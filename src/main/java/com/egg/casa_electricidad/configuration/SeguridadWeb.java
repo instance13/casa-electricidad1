@@ -24,15 +24,15 @@ public class SeguridadWeb {
   }
 
   @Bean
-  public UserDetailsService userDetailsService() {
-    return new UsuarioServicio();
+  public UserDetailsService userDetailsService(UsuarioServicio usuarioServicio) {
+    return usuarioServicio;
   }
 
   @Bean
-  public AuthenticationManager authenticationManager() {
+  public AuthenticationManager authenticationManager(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
 
     DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-    provider.setUserDetailsService(userDetailsService());
+    provider.setUserDetailsService(userDetailsService);
     provider.setPasswordEncoder(passwordEncoder());
 
     return new ProviderManager(provider);

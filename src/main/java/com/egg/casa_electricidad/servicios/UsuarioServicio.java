@@ -20,6 +20,7 @@ import com.egg.casa_electricidad.enumeraciones.Rol;
 import com.egg.casa_electricidad.excepciones.ResourceNotFoundException;
 import com.egg.casa_electricidad.repositorios.UsuarioRepositorio;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -99,16 +100,16 @@ public UserResponseDTO obtenerPorId(UUID id) {
    * @return The updated user
    * @throws ResourceNotFoundException if the user is not found
    */
-  @Transactional
-  public Usuario actualizarUsuario(UUID id, UserUpdateDTO userUpdateDTO) {
-    Usuario usuario = obtenerPorId(id);
+@Transactional
+public Usuario actualizarUsuario(UUID id, UserUpdateDTO userUpdateDTO) {
+    Usuario usuario = usuarioRepositorio.findById(id)
+        .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con id: " + id));
 
-    ModelMapper modelMapper = new ModelMapper();
     modelMapper.getConfiguration().setSkipNullEnabled(true);
     modelMapper.map(userUpdateDTO, usuario);
 
     return usuarioRepositorio.save(usuario);
-  }
+}
 
   /**
    * Deletes a user by ID
