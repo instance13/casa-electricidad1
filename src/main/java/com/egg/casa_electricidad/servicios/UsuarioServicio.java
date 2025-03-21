@@ -50,13 +50,13 @@ public class UsuarioServicio implements UserDetailsService {
    * 
    * @return List of all users
    */
-// i need to analyze this code:
-public List<UserResponseDTO> listarTodos() {
+  // i need to analyze this code:
+  public List<UserResponseDTO> listarTodos() {
     return usuarioRepositorio.findAll()
         .stream()
         .map(user -> modelMapper.map(user, UserResponseDTO.class))
         .toList();
-}
+  }
 
   /**
    * Finds a user by ID
@@ -65,14 +65,14 @@ public List<UserResponseDTO> listarTodos() {
    * @return The user if found
    * @throws ResourceNotFoundException if the user is not found
    */
-public UserResponseDTO obtenerPorId(UUID id) {
+  public UserResponseDTO obtenerPorId(UUID id) {
     Usuario usuario = usuarioRepositorio.findById(id)
         .orElseThrow(() -> new ResourceNotFoundException(
             "Usuario no encontrado con ID: " + id));
-    
+
     return modelMapper.map(usuario, UserResponseDTO.class);
   }
-  
+
   /**
    * Creates a new user
    * 
@@ -81,9 +81,10 @@ public UserResponseDTO obtenerPorId(UUID id) {
    */
   @Transactional
   public Usuario registrar(RegisterRequestDTO registerRequestDTO) {
-    if (usuarioRepositorio.findByEmail(registerRequestDTO.email()).isPresent()) {
-      throw new RuntimeException("El email ya está registrado.");
-    }
+    usuarioRepositorio.findByEmail(registerRequestDTO.email())
+        .ifPresent(user -> {
+          throw new RuntimeException("El email ya está registrado.");
+        });
 
     Usuario usuario = modelMapper.map(registerRequestDTO, Usuario.class);
     usuario.setRol(Rol.USER);
@@ -100,8 +101,8 @@ public UserResponseDTO obtenerPorId(UUID id) {
    * @return The updated user
    * @throws ResourceNotFoundException if the user is not found
    */
-@Transactional
-public Usuario actualizarUsuario(UUID id, UserUpdateDTO userUpdateDTO) {
+  @Transactional
+  public Usuario actualizarUsuario(UUID id, UserUpdateDTO userUpdateDTO) {
     Usuario usuario = usuarioRepositorio.findById(id)
         .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con id: " + id));
 
@@ -109,7 +110,7 @@ public Usuario actualizarUsuario(UUID id, UserUpdateDTO userUpdateDTO) {
     modelMapper.map(userUpdateDTO, usuario);
 
     return usuarioRepositorio.save(usuario);
-}
+  }
 
   /**
    * Deletes a user by ID
