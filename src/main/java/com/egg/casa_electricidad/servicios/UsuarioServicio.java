@@ -79,14 +79,14 @@ public class UsuarioServicio implements UserDetailsService {
    */
   @Transactional
   public Usuario crear(RegisterRequestDTO registerRequestDTO) {
-    usuarioRepositorio.findByEmail(registerRequestDTO.email())
+    usuarioRepositorio.findByEmail(registerRequestDTO.getEmail())
         .ifPresent(user -> {
           throw new RuntimeException("El email ya está registrado.");
         });
 
     Usuario usuario = modelMapper.map(registerRequestDTO, Usuario.class);
     usuario.setRol(Rol.USER);
-    usuario.setPassword(passwordEncoder.encode(registerRequestDTO.password()));
+    usuario.setPassword(passwordEncoder.encode(registerRequestDTO.getPassword()));
 
     return usuarioRepositorio.save(usuario);
   }

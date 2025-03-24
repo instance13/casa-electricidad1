@@ -7,7 +7,6 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -79,7 +78,6 @@ public class SeguridadWeb {
             .permitAll()
             .anyRequest().authenticated())
         .csrf(csrf -> csrf.disable())
-        .csrf(csrf -> csrf.ignoringRequestMatchers("/usuario"))
         .formLogin(form -> form.disable()); // Disable form login to prevent redirects // Disable HTTP Basic Auth for
 
     return http.build();

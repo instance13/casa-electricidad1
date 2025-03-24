@@ -4,10 +4,17 @@ import java.util.UUID;
 
 import com.egg.casa_electricidad.entidades.Imagen;
 
-public record UserResponseDTO(
-    UUID usuarioId,
-    String email,
-    String nombre,
-    String apellido,
-    Imagen imagenUsuario) {
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class UserResponseDTO {
+    private UUID idUsuario;
+    private String email;
+    private String nombre;
+    private String apellido;
+    private Imagen imagenUsuario;
 }
