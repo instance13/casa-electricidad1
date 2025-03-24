@@ -2,8 +2,6 @@ package com.egg.casa_electricidad.entidades;
 
 import java.util.UUID;
 
-import org.hibernate.validator.constraints.UniqueElements;
-
 import com.egg.casa_electricidad.constraints.ValidRole;
 import com.egg.casa_electricidad.enumeraciones.Rol;
 
@@ -36,14 +34,13 @@ public class Usuario {
   private UUID idUsuario;
 
   @NotBlank(message = "El email no debe estar vacío.")
-  @UniqueElements
   @Email(message = "Email inválido.")
   private String email;
 
-  @NotBlank(message = "El nombre no debe estar vacío.")
+  // @NotBlank(message = "El nombre no debe estar vacío.")
   private String nombre;
 
-  @NotBlank(message = "El apellido no debe estar vacío.")
+  // @NotBlank(message = "El apellido no debe estar vacío.")
   private String apellido;
 
   @NotBlank(message = "La contraseña no debe estar vacía.")
@@ -52,13 +49,13 @@ public class Usuario {
     message = "Password must contain at least one digit, one lowercase, one uppercase, and one special character")
   private String password;
 
-  @NotNull
+  // @NotNull
   @Enumerated(EnumType.STRING)
   @ValidRole
   private Rol rol;
 
   @ManyToOne
   @JoinColumn(name = "idImagen")
-  @NotNull
+  // @NotNull
   private Imagen imagenUsuario;
 }

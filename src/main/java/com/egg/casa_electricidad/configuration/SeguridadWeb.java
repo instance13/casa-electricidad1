@@ -6,16 +6,15 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
-import com.egg.casa_electricidad.servicios.UsuarioServicio;
-
 @Configuration
-
+@EnableWebSecurity
 public class SeguridadWeb {
 
   @Bean
@@ -23,10 +22,11 @@ public class SeguridadWeb {
     return new BCryptPasswordEncoder();
   }
 
-  @Bean
-  public UserDetailsService userDetailsService(UsuarioServicio usuarioServicio) {
-    return usuarioServicio;
-  }
+  // @Bean
+  // public UserDetailsService userDetailsService(UsuarioServicio usuarioServicio)
+  // {
+  // return usuarioServicio;
+  // }
 
   @Bean
   public AuthenticationManager authenticationManager(UserDetailsService userDetailsService,
@@ -34,38 +34,38 @@ public class SeguridadWeb {
 
     DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
     provider.setUserDetailsService(userDetailsService);
-    provider.setPasswordEncoder(passwordEncoder());
+    provider.setPasswordEncoder(passwordEncoder);
 
     return new ProviderManager(provider);
   }
 
   // @Bean
   // public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-  //   http
-  //       .authorizeHttpRequests((authorize) -> authorize
-  //           .requestMatchers("/admin/**").hasRole("ADMIN")
-  //           .requestMatchers("/css/**", "/js/**", "/img/**").permitAll()
-  //           .requestMatchers("/login", "/usuario/registro", "/registrar").permitAll()
-  //           .anyRequest().authenticated() // Requiere autenticacion
-  //       ).sessionManagement(session -> session
-  //           .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-  //           // Optional: set max sessions per user
-  //           .maximumSessions(1)
-  //           // Optional: prevent login if max sessions reached
-  //           .maxSessionsPreventsLogin(false))
-  //       .formLogin((form) -> form
-  //           .loginPage("/login")
-  //           .loginProcessingUrl("/logincheck")
-  //           .usernameParameter("email")
-  //           .passwordParameter("password")
-  //           .defaultSuccessUrl("/inicio", true)
-  //           .permitAll())
-  //       .logout((logout) -> logout
-  //           .logoutUrl("/logout")
-  //           .logoutSuccessUrl("/")
-  //           .permitAll())
-  //       .csrf(csrf -> csrf.disable());
-  //   return http.build();
+  // http
+  // .authorizeHttpRequests((authorize) -> authorize
+  // .requestMatchers("/admin/**").hasRole("ADMIN")
+  // .requestMatchers("/css/**", "/js/**", "/img/**").permitAll()
+  // .requestMatchers("/login", "/usuario/").permitAll()
+  // .anyRequest().authenticated() // Requiere autenticacion
+  // ).sessionManagement(session ->
+  // session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+  // // Optional: set max sessions per user
+  // .maximumSessions(1)
+  // // Optional: prevent login if max sessions reached
+  // .maxSessionsPreventsLogin(false))
+  // .formLogin((form) -> form
+  // .loginPage("/login")
+  // .loginProcessingUrl("/logincheck")
+  // .usernameParameter("email")
+  // .passwordParameter("password")
+  // .defaultSuccessUrl("/inicio", true)
+  // .permitAll())
+  // .logout((logout) -> logout
+  // .logoutUrl("/logout")
+  // .logoutSuccessUrl("/")
+  // .permitAll())
+  // .csrf(csrf -> csrf.disable());
+  // return http.build();
   // }
 
   @Bean
@@ -75,13 +75,15 @@ public class SeguridadWeb {
             .requestMatchers("/admin/**").hasRole("ADMIN")
             .requestMatchers("/css/**", "/js/**", "/img/**").permitAll()
             .requestMatchers(
-                "/usuario/**").permitAll()
+                "/usuario/**", "/", "/usuario")
+            .permitAll()
             .anyRequest().authenticated())
-        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
         .csrf(csrf -> csrf.disable())
-        .formLogin(form -> form.disable()) // Disable form login to prevent redirects
-        .httpBasic(httpBasic -> httpBasic.disable()); // Disable HTTP Basic Auth for now
+        .csrf(csrf -> csrf.ignoringRequestMatchers("/usuario"))
+        .formLogin(form -> form.disable()); // Disable form login to prevent redirects // Disable HTTP Basic Auth for
 
     return http.build();
   }
+  // .sessionManagement(session ->
+  // session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
 }

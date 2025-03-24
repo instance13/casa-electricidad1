@@ -23,11 +23,9 @@ import com.egg.casa_electricidad.repositorios.UsuarioRepositorio;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 
 @Service
 @AllArgsConstructor
-@NoArgsConstructor
 public class UsuarioServicio implements UserDetailsService {
   private UsuarioRepositorio usuarioRepositorio;
   private ModelMapper modelMapper;
@@ -80,7 +78,7 @@ public class UsuarioServicio implements UserDetailsService {
    * @return The created user
    */
   @Transactional
-  public Usuario registrar(RegisterRequestDTO registerRequestDTO) {
+  public Usuario crear(RegisterRequestDTO registerRequestDTO) {
     usuarioRepositorio.findByEmail(registerRequestDTO.email())
         .ifPresent(user -> {
           throw new RuntimeException("El email ya está registrado.");

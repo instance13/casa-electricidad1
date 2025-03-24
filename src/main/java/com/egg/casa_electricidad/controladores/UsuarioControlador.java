@@ -1,11 +1,12 @@
 package com.egg.casa_electricidad.controladores;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +17,7 @@ import com.egg.casa_electricidad.configuration.dto.response.UserResponseDTO;
 import com.egg.casa_electricidad.entidades.Usuario;
 import com.egg.casa_electricidad.servicios.UsuarioServicio;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 // i use rest controller since i'll be testing my api with postman, and i'm too lazy to create views myself :p.
@@ -27,17 +29,30 @@ public class UsuarioControlador {
   private final UsuarioServicio usuarioServicio;
 
   @GetMapping
-  @PreAuthorize("hasRole('ADMIN')")
-  public List<UserResponseDTO> listarUsuarios() {
-    return usuarioServicio.listarTodos();
+  public ResponseEntity<List<UserResponseDTO>> listar() {
+    List<UserResponseDTO> usuarios = usuarioServicio.listarTodos();
 
+    if (usuarios.isEmpty()) {
+      return ResponseEntity.noContent().build(); 
+    }
+
+    return ResponseEntity.ok(usuarios);
   }
 
-  @PostMapping("/registro")
-  public ResponseEntity<UserResponseDTO> registrarUsuario(@RequestBody RegisterRequestDTO registerRequestDTO) {
-    Usuario usuario = usuarioServicio.registrar(registerRequestDTO);
+  // change: from /registro to default controller path in order to satisfy this
+  // rule: CRUD function names should not be used in URIs.
+  @PostMapping
+  public ResponseEntity<UserResponseDTO> registrar( @RequestBody RegisterRequestDTO registerRequestDTO) {
+    Usuario usuario = usuarioServicio.crear(registerRequestDTO);
     UserResponseDTO responseDTO = new UserResponseDTO(
-        usuario.getIdUsuario(), usuario.getEmail(), usuario.getNombre(), usuario.getApellido(), usuario.getImagenUsuario());
+        usuario.getIdUsuario(), usuario.getEmail(), usuario.getNombre(), usuario.getApellido(),
+        usuario.getImagenUsuario());
     return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
+  }
+
+  @GetMapping("/{id}")
+  public ResponseEntity<UserResponseDTO> obtenerPorId(@PathVariable UUID id) {
+    UserResponseDTO responseDTO = usuarioServicio.obtenerPorId(id);
+    return ResponseEntity.ok(responseDTO);
   }
 }
