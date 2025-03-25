@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -74,13 +75,13 @@ public class SeguridadWeb {
             .requestMatchers("/admin/**").hasRole("ADMIN")
             .requestMatchers("/css/**", "/js/**", "/img/**").permitAll()
             .requestMatchers(
-                "/usuario/**", "/", "/usuario")
+                "/usuario/**", "/",  "/usuario")
             .permitAll()
             .anyRequest().authenticated())
         .csrf(csrf -> csrf.disable())
-        .formLogin(form -> form.disable()); // Disable form login to prevent redirects // Disable HTTP Basic Auth for
-
-    return http.build();
+        .formLogin(form -> form.disable()).httpBasic(Customizer.withDefaults());// Ensure Basic Authentication is enabled
+    
+    return http.getOrBuild(); 
   }
   // .sessionManagement(session ->
   // session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)

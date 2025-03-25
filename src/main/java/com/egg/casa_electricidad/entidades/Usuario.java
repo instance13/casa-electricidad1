@@ -40,7 +40,6 @@ public class Usuario {
 
   // @NotNull
   @Enumerated(EnumType.STRING)
-
   private Rol rol;
 
   @ManyToOne

@@ -13,11 +13,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.egg.casa_electricidad.configuration.dto.request.RegisterRequestDTO;
+import com.egg.casa_electricidad.configuration.dto.request.SuperAdminRequestDTO;
+import com.egg.casa_electricidad.configuration.dto.request.UserRoleDTO;
 import com.egg.casa_electricidad.configuration.dto.request.UserUpdateDTO;
 import com.egg.casa_electricidad.configuration.dto.response.UserResponseDTO;
 import com.egg.casa_electricidad.entidades.Usuario;
 import com.egg.casa_electricidad.enumeraciones.Rol;
 import com.egg.casa_electricidad.excepciones.ResourceNotFoundException;
+import com.egg.casa_electricidad.excepciones.UnauthorizedException;
 import com.egg.casa_electricidad.repositorios.UsuarioRepositorio;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -36,11 +39,17 @@ public class UsuarioServicio implements UserDetailsService {
     Usuario usuario = usuarioRepositorio.findByEmail(username)
         .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con email: " + username));
 
+    String rawPassword = "admin123/*/";
+    boolean isMatch = passwordEncoder.matches(rawPassword, usuario.getPassword());
+
+    System.out.println("--- [!] Matches? " + isMatch);
+
     // using UserDetails implementation User from Spring!
     return new User(
         usuario.getEmail(),
         usuario.getPassword(),
         List.of(new SimpleGrantedAuthority("ROLE_" + usuario.getRol().name())));
+
   }
 
   /**
@@ -72,7 +81,62 @@ public class UsuarioServicio implements UserDetailsService {
   }
 
   /**
-   * Creates a new user
+   * Finds a user by email
+   * 
+   * @param email The email of the user
+   * @return The user if found
+   * @throws ResourceNotFoundException if the user is not found
+   */
+  public UserResponseDTO obtenerPorEmail(String email) {
+    Usuario usuario = usuarioRepositorio.findByEmail(email)
+        .orElseThrow(() -> new ResourceNotFoundException(
+            "Usuario no encontrado con email: " + email));
+
+    return modelMapper.map(usuario, UserResponseDTO.class);
+  }
+
+  /**
+   * Finds a user by email
+   * 
+   * @param email The email of the user
+   * @return The user if found
+   * @throws ResourceNotFoundException if the user is not found
+   */
+  public UserRoleDTO obtenerRolPorEmail(String email) {
+    Usuario usuario = usuarioRepositorio.findByEmail(email)
+        .orElseThrow(() -> new ResourceNotFoundException(
+            "Usuario no encontrado con email: " + email));
+
+    return modelMapper.map(usuario, UserRoleDTO.class);
+  }
+
+  /**
+   * Finds a user by email
+   * 
+   * @param email The email of the user
+   * @return The user if found
+   * @throws ResourceNotFoundException if the user is not found
+   */
+  public UserUpdateDTO obtenerPorEmailParaCambioDeRol(String email) {
+    Usuario usuario = usuarioRepositorio.findByEmail(email)
+        .orElseThrow(() -> new ResourceNotFoundException(
+            "Usuario no encontrado con email: " + email));
+
+    return modelMapper.map(usuario, UserUpdateDTO.class);
+  }
+
+  /**
+   * Finds a user by role
+   * 
+   * @param role The role to find
+   * @return true if at least one user has the specified role
+   */
+  public boolean existeUsuarioPorRol(Rol role) {
+    return usuarioRepositorio.existsByRol(role);
+  }
+
+  /**
+   * Creates a new user with the role USER by default
    * 
    * @param usuario The user to create
    * @return The created user
@@ -87,6 +151,25 @@ public class UsuarioServicio implements UserDetailsService {
     Usuario usuario = modelMapper.map(registerRequestDTO, Usuario.class);
     usuario.setRol(Rol.USER);
     usuario.setPassword(passwordEncoder.encode(registerRequestDTO.getPassword()));
+
+    return usuarioRepositorio.save(usuario);
+  }
+
+  /**
+   * Creates a new admin
+   * 
+   * @param usuario The user to create
+   * @return The created user
+   */
+  @Transactional
+  public Usuario crear(SuperAdminRequestDTO superAdminRequestDTO) {
+    usuarioRepositorio.findByEmail(superAdminRequestDTO.getEmail())
+        .ifPresent(user -> {
+          throw new RuntimeException("El email ya está registrado.");
+        });
+
+    Usuario usuario = modelMapper.map(superAdminRequestDTO, Usuario.class);
+    usuario.setPassword(passwordEncoder.encode(superAdminRequestDTO.getPassword()));
 
     return usuarioRepositorio.save(usuario);
   }
@@ -108,6 +191,32 @@ public class UsuarioServicio implements UserDetailsService {
     modelMapper.map(userUpdateDTO, usuario);
 
     return usuarioRepositorio.save(usuario);
+  }
+
+  /**
+   * Updates an existing user
+   * 
+   *
+   */
+  @Transactional
+  public UserRoleDTO actualizarRol(UUID userId, String nuevoRol, UserRoleDTO admin) {
+
+    if (admin.getRole() != Rol.ADMIN) {
+      throw new UnauthorizedException();
+    }
+
+    Usuario usuario = usuarioRepositorio.findById(userId)
+        .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + userId));
+
+    // there is no need to validate the role, since custom bean valdation constraint
+    // does that in the UserRoleUpdatDTO :D.
+
+    Rol nuevoRolEnum = Rol.valueOf(nuevoRol.toUpperCase());
+
+    usuario.setRol(nuevoRolEnum);
+    usuarioRepositorio.save(usuario);
+
+    return modelMapper.map(usuario, UserRoleDTO.class);
   }
 
   /**

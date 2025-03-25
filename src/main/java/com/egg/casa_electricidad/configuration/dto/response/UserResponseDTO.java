@@ -3,6 +3,7 @@ package com.egg.casa_electricidad.configuration.dto.response;
 import java.util.UUID;
 
 import com.egg.casa_electricidad.entidades.Imagen;
+import com.egg.casa_electricidad.enumeraciones.Rol;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,5 +17,6 @@ public class UserResponseDTO {
     private String email;
     private String nombre;
     private String apellido;
+    private Rol rol;
     private Imagen imagenUsuario;
 }
