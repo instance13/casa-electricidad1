@@ -12,7 +12,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.egg.casa_electricidad.configuration.dto.request.RegisterRequestDTO;
+import com.egg.casa_electricidad.configuration.dto.request.AuthenticationRequestDTO;
 import com.egg.casa_electricidad.configuration.dto.request.SuperAdminRequestDTO;
 import com.egg.casa_electricidad.configuration.dto.request.UserRoleDTO;
 import com.egg.casa_electricidad.configuration.dto.request.UserUpdateDTO;
@@ -32,17 +32,12 @@ import lombok.AllArgsConstructor;
 public class UsuarioServicio implements UserDetailsService {
   private UsuarioRepositorio usuarioRepositorio;
   private ModelMapper modelMapper;
-  private PasswordEncoder passwordEncoder;
+  private final PasswordEncoder passwordEncoder;
 
   @Override
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
     Usuario usuario = usuarioRepositorio.findByEmail(username)
         .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con email: " + username));
-
-    String rawPassword = "admin123/*/";
-    boolean isMatch = passwordEncoder.matches(rawPassword, usuario.getPassword());
-
-    System.out.println("--- [!] Matches? " + isMatch);
 
     // using UserDetails implementation User from Spring!
     return new User(
@@ -142,7 +137,7 @@ public class UsuarioServicio implements UserDetailsService {
    * @return The created user
    */
   @Transactional
-  public Usuario crear(RegisterRequestDTO registerRequestDTO) {
+  public Usuario crear(AuthenticationRequestDTO registerRequestDTO) {
     usuarioRepositorio.findByEmail(registerRequestDTO.getEmail())
         .ifPresent(user -> {
           throw new RuntimeException("El email ya está registrado.");
@@ -169,7 +164,9 @@ public class UsuarioServicio implements UserDetailsService {
         });
 
     Usuario usuario = modelMapper.map(superAdminRequestDTO, Usuario.class);
-    usuario.setPassword(passwordEncoder.encode(superAdminRequestDTO.getPassword()));
+    System.out.println("--- ! PASSWORD ! ---" + superAdminRequestDTO.getPassword());
+    usuario.setPassword(superAdminRequestDTO.getPassword());
+    // System.out.println("--- ! PASSWORD AFTER ENCODING ! ---" + superAdminRequestDTO.getPassword());
 
     return usuarioRepositorio.save(usuario);
   }

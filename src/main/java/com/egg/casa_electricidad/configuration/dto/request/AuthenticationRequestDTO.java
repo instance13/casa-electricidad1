@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor // Generates a no-args constructor (required by JPA)
 @AllArgsConstructor // Generates a constructor with all args
 @Builder // Implements the Builder pattern for this class
-public class RegisterRequestDTO {
+public class AuthenticationRequestDTO {
 
     @Email
     @NotBlank(message = "El email no debe estar vacío.")
