@@ -41,8 +41,13 @@ public class UsuarioServicio implements UserDetailsService {
 
     String rawPassword = "admin123/*/";
     boolean isMatch = passwordEncoder.matches(rawPassword, usuario.getPassword());
-
     System.out.println("--- [!] Matches? " + isMatch);
+    System.out.printf("Retrieved hashed password: %s\n", usuario.getPassword());
+
+    System.out.println("-------- Verifying authentication details...");
+    System.out.println("-------- Email: " + usuario.getEmail());
+    System.out.println("-------- Stored Password Hash: " + usuario.getPassword());
+    System.out.println("-------- Entered Password Matches? " + passwordEncoder.matches("admin123/*/", usuario.getPassword()));
 
     // using UserDetails implementation User from Spring!
     return new User(
@@ -150,6 +155,7 @@ public class UsuarioServicio implements UserDetailsService {
 
     Usuario usuario = modelMapper.map(registerRequestDTO, Usuario.class);
     usuario.setRol(Rol.USER);
+    
     usuario.setPassword(passwordEncoder.encode(registerRequestDTO.getPassword()));
 
     return usuarioRepositorio.save(usuario);
@@ -169,7 +175,9 @@ public class UsuarioServicio implements UserDetailsService {
         });
 
     Usuario usuario = modelMapper.map(superAdminRequestDTO, Usuario.class);
+    System.out.println("BEFORE hashing: " + superAdminRequestDTO.getPassword());
     usuario.setPassword(passwordEncoder.encode(superAdminRequestDTO.getPassword()));
+    System.out.println("AFTER hashing: " + usuario.getPassword());
 
     return usuarioRepositorio.save(usuario);
   }
