@@ -19,18 +19,16 @@ public class SeguridadWeb {
 
   @Bean
   public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
+    PasswordEncoder encoder = new BCryptPasswordEncoder();
+    System.out.println("-------- [SECURITY] Created PasswordEncoder: " + encoder);
+    return encoder;
   }
-
-  // @Bean
-  // public UserDetailsService userDetailsService(UsuarioServicio usuarioServicio)
-  // {
-  // return usuarioServicio;
-  // }
 
   @Bean
   public AuthenticationManager authenticationManager(UserDetailsService userDetailsService,
       PasswordEncoder passwordEncoder) {
+
+    System.out.println("------- [SECURITY] Injected PasswordEncoder: " + passwordEncoder);
 
     DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
     provider.setUserDetailsService(userDetailsService);
@@ -39,50 +37,20 @@ public class SeguridadWeb {
     return new ProviderManager(provider);
   }
 
-  // @Bean
-  // public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-  // http
-  // .authorizeHttpRequests((authorize) -> authorize
-  // .requestMatchers("/admin/**").hasRole("ADMIN")
-  // .requestMatchers("/css/**", "/js/**", "/img/**").permitAll()
-  // .requestMatchers("/login", "/usuario/").permitAll()
-  // .anyRequest().authenticated() // Requiere autenticacion
-  // ).sessionManagement(session ->
-  // session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-  // // Optional: set max sessions per user
-  // .maximumSessions(1)
-  // // Optional: prevent login if max sessions reached
-  // .maxSessionsPreventsLogin(false))
-  // .formLogin((form) -> form
-  // .loginPage("/login")
-  // .loginProcessingUrl("/logincheck")
-  // .usernameParameter("email")
-  // .passwordParameter("password")
-  // .defaultSuccessUrl("/inicio", true)
-  // .permitAll())
-  // .logout((logout) -> logout
-  // .logoutUrl("/logout")
-  // .logoutSuccessUrl("/")
-  // .permitAll())
-  // .csrf(csrf -> csrf.disable());
-  // return http.build();
-  // }
-
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http
         .authorizeHttpRequests((authorize) -> authorize
-            .requestMatchers("/admin/**").hasRole("ADMIN")
+            .requestMatchers("/admin/**").hasAuthority("ADMIN")
             .requestMatchers("/css/**", "/js/**", "/img/**").permitAll()
             .requestMatchers(
-                "/usuario/**", "/",  "/usuario")
+                "/usuario/**", "/", "/usuario")
             .permitAll()
             .anyRequest().authenticated())
         .csrf(csrf -> csrf.disable())
-        .formLogin(form -> form.disable()).httpBasic(Customizer.withDefaults());// Ensure Basic Authentication is enabled
-    
-    return http.getOrBuild(); 
+        .formLogin(form -> form.disable()).httpBasic(Customizer.withDefaults());// Ensure Basic Authentication is
+                                                                                // enabled
+
+    return http.getOrBuild();
   }
-  // .sessionManagement(session ->
-  // session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
 }

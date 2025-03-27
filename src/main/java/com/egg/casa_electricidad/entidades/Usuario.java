@@ -16,12 +16,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Data // Generates getters, setters, toString, equals, and hashCode
 @NoArgsConstructor // Generates a no-args constructor (required by JPA)
 @AllArgsConstructor // Generates a constructor with all args
 @Builder // Implements the Builder pattern for this class
+@ToString
 public class Usuario {
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)

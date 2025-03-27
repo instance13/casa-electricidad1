@@ -47,14 +47,17 @@ public class UsuarioServicio implements UserDetailsService {
     System.out.println("-------- Verifying authentication details...");
     System.out.println("-------- Email: " + usuario.getEmail());
     System.out.println("-------- Stored Password Hash: " + usuario.getPassword());
-    System.out.println("-------- Entered Password Matches? " + passwordEncoder.matches("admin123/*/", usuario.getPassword()));
+    System.out
+        .println("-------- Entered Password Matches? " + passwordEncoder.matches("admin123/*/", usuario.getPassword()));
 
     // using UserDetails implementation User from Spring!
-    return new User(
+    UserDetails userDetails = new User(
         usuario.getEmail(),
         usuario.getPassword(),
         List.of(new SimpleGrantedAuthority("ROLE_" + usuario.getRol().name())));
-
+    System.out
+        .println("-------- Returning UserDetails: " + userDetails.getUsername() + " | " + userDetails.getPassword());
+    return userDetails;
   }
 
   /**
@@ -112,7 +115,9 @@ public class UsuarioServicio implements UserDetailsService {
         .orElseThrow(() -> new ResourceNotFoundException(
             "Usuario no encontrado con email: " + email));
 
+    System.out.println(usuario);
     return modelMapper.map(usuario, UserRoleDTO.class);
+    // return new UserRoleDTO(usuario.getRol());
   }
 
   /**
@@ -155,7 +160,7 @@ public class UsuarioServicio implements UserDetailsService {
 
     Usuario usuario = modelMapper.map(registerRequestDTO, Usuario.class);
     usuario.setRol(Rol.USER);
-    
+
     usuario.setPassword(passwordEncoder.encode(registerRequestDTO.getPassword()));
 
     return usuarioRepositorio.save(usuario);
@@ -209,7 +214,7 @@ public class UsuarioServicio implements UserDetailsService {
   @Transactional
   public UserRoleDTO actualizarRol(UUID userId, String nuevoRol, UserRoleDTO admin) {
 
-    if (admin.getRole() != Rol.ADMIN) {
+    if (!(admin.getRole() == Rol.ADMIN)) {
       throw new UnauthorizedException();
     }
 
@@ -225,6 +230,7 @@ public class UsuarioServicio implements UserDetailsService {
     usuarioRepositorio.save(usuario);
 
     return modelMapper.map(usuario, UserRoleDTO.class);
+    // return new UserRoleDTO(usuario.getRol());
   }
 
   /**
